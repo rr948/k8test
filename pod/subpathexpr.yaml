@@ -1,4 +1,4 @@
-            ---
+---
 # https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath-with-expanded-environment-variables
 apiVersion: v1
 kind: Pod

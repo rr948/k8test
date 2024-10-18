@@ -1,4 +1,4 @@
-            ---
+---
 # Namespace here refers to the container namespaces, not kubernetes
 apiVersion: v1
 kind: Pod

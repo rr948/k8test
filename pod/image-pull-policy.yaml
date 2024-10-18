@@ -1,4 +1,4 @@
-            # imagePullPolicies: IfNotPresent, Always
+# imagePullPolicies: IfNotPresent, Always
 ---
 apiVersion: v1
 kind: Pod

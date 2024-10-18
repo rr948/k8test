@@ -1,4 +1,4 @@
-            ---
+---
 # https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath
 # Sometimes, it is useful to share one volume for multiple uses in a single Pod.
 # The volumeMounts.subPath property can be used to specify a sub-path inside the
