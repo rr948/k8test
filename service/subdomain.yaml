@@ -1,4 +1,4 @@
-            ---
+---
 # Taken from: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields
 # Currently when a pod is created, its hostname is the Pod's metadata.name value.
 # The Pod spec has an optional hostname field, which can be used to specify the Pod's hostname.

@@ -1,4 +1,4 @@
-            ---
+---
 # https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/ claims that this invoked the OOM killer, but it runs fine on MicroK8s?
 apiVersion: v1
 kind: Pod

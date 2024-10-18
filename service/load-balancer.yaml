@@ -1,4 +1,4 @@
-            ---
+---
 # https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
 apiVersion: v1
 kind: Service

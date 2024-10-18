@@ -1,4 +1,4 @@
-            # Evaluates error rates for each endpoint in the pool against the settings here, ejecting them if they cross the thresholds.
+# Evaluates error rates for each endpoint in the pool against the settings here, ejecting them if they cross the thresholds.
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule

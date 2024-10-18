@@ -1,4 +1,4 @@
-            # NB: these apply per server workload (Pod).
+# NB: these apply per server workload (Pod).
 # eg `maxConnections: 100` means each *client* Pod's sidecar will open max 100 connections to each individual *server* endpoint.
 ---
 apiVersion: networking.istio.io/v1beta1

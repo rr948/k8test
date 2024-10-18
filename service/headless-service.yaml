@@ -1,4 +1,4 @@
-            # Example of a headless service.
+# Example of a headless service.
 # To see the difference, exec onto the headless service app, and do:
 #
 # nslookup headless-service-normal-service
