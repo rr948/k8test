@@ -1,0 +1,20 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pod-disruption-budget-max-unavailable-simple
+spec:
+  maxUnavailable: "10%"
+  selector:
+    matchLabels:
+      app: app-simple
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pod-disruption-budget-min-available-simple
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: app-simple	  
