@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample</title>
+  <!-- Copyright 1998-2021 by Northwoods Software Corporation. -->
+  <script src="go.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.13/dist/extensions/HyperlinkText.js"></script>
+  <script id="code">
+  function init() {
+    var $ = go.GraphObject.make;
+
+    myDiagram =
+      $(go.Diagram, "myDiagramDiv",
+        {
+          "undoManager.isEnabled": true
+        });
+
+    myDiagram.nodeTemplate =
+      $(go.Node, "Auto",
+        $(go.Shape,
+          { fill: "white", },
+          new go.Binding("fill", "color")),
+		  new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+		  go.GraphObject.build('HyperlinkText',
+          { margin: 10 },
+          (node) => node.data.key,
+          (node) => node.data.key 
+        ),
+        $(go.TextBlock,
+          { margin: 8 },
+          new go.Binding("text", "key")),
+		  new go.Panel('Auto')
+          .add(
+            //new go.Shape('RoundedTopRectangle', { fill: 'white' })
+              //.bind('fill', 'role', (r) => (r[0] === 't' ? 'lightgray' : 'white')),
+            new go.TextBlock({
+              margin: new go.Margin(0, 0, 0, 0),
+              textAlign: 'center'
+            })
+             // .bind('text', 'header')
+          ),
+		  new go.Panel('Auto', { minSize: new go.Size(NaN, 70) })
+          .add(
+            //new go.Shape('Rectangle', { fill: 'white' }),
+            new go.TextBlock({
+              width: 120,
+              margin: new go.Margin(0, 0, 0, 0),
+              textAlign: 'right'
+            })
+              .bind('text'),
+           /* new go.Shape('BpmnActivityLoop', {
+              visible: false,
+              width: 10,
+              height: 10,
+              alignment: new go.Spot(0.5, 1, 0, -3),
+              alignmentFocus: go.Spot.Bottom
+            })
+              .bind('visible', 'loop')*/
+          ),
+       /* new go.Panel('Auto')
+          .add(
+            new go.Shape('RoundedBottomRectangle', { fill: 'white' })
+              .bind('fill', 'role', (r) => (r[0] === 'b' ? 'lightgray' : 'white')),
+            new go.TextBlock({
+              margin: new go.Margin(2, 2, 0, 2),
+              textAlign: 'center'
+            })
+              .bind('text', 'footer')
+          )*/
+      );
+    
+  /*  myDiagram.groupTemplate =
+      $(go.Group, "Auto",
+        $(go.Shape, { fill: "transparent", strokeWidth: 3 },
+          new go.Binding("stroke", "color"),
+          new go.Binding("fill", "color", go.Brush.lighten)),
+		  //new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+        $(go.Placeholder, { alignment: go.Spot.TopLeft, padding: 15 }),
+        $("SubGraphExpanderButton", { alignment: go.Spot.TopLeft }),
+        {
+          minSize: new go.Size(50, 50),
+          subGraphExpandedChanged: function(grp) {
+            if (!grp.isSubGraphExpanded) return;
+            shiftNodes(grp);
+          },
+          selectionChanged: function(grp) {
+            grp.diagram.commit(function(diag) {
+              var lay = grp.isSelected ? "Foreground" : "";
+              grp.layerName = lay;
+              grp.findSubGraphParts().each(function(x) { x.layerName = lay; });
+            }, null);
+          }
+        }
+      ); */
+	   myDiagram.groupTemplate =
+    $(go.Group, "Vertical",  // title above Placeholder
+      new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+      new go.Binding("isSubGraphExpanded").makeTwoWay(),
+	  new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+	  
+      { background: "transparent" },
+      $(go.Panel, "Horizontal",  // button next to TextBlock
+        { stretch: go.GraphObject.Horizontal },
+        $("SubGraphExpanderButton",
+          { alignment: go.Spot.Right, margin: 5 }),
+        $(go.TextBlock,
+          {
+            alignment: go.Spot.Left,
+            editable: true,
+            margin: 5
+          },
+          new go.Binding("text").makeTwoWay())
+      ),  // end Horizontal Panel
+      $(go.Panel, "Auto",
+        { alignment: go.Spot.Left },
+        $(go.Shape, { fill: "whitesmoke" }),
+        $(go.Placeholder,          { padding: 10 })
+      )
+    );
+
+  function shiftNodes(part) {
+    part.ensureBounds();
+    var b = part.actualBounds;
+    var diagram = part.diagram;
+    if (diagram === null) return;
+    var overlaps = diagram.findObjectsIn(b,
+          function(x) { var p = x.part; return (p.isTopLevel && p instanceof go.Node) ? p : null; },
+          function(node) { return node !== part && !node.isMemberOf(part); },
+          true);
+    var dx = 0;
+    var dy = 0;
+    var shiftsXY = new go.Set();
+    var shiftsX = new go.Set();
+    var shiftsY = new go.Set();
+    overlaps.each(function(node) {
+      var r = node.actualBounds;
+      if (r.contains(b.right, b.bottom)) {
+        dx = Math.max(dx, b.right - r.left);
+        dy = Math.max(dy, b.bottom - r.top);
+        shiftsXY.add(node);
+      } else if (b.contains(r.left, r.bottom)) {
+        dx = Math.max(dx, b.right - r.left);
+        shiftsX.add(node);
+      } else if (b.contains(r.right, r.top)) {
+        dy = Math.max(dy, b.bottom - r.top);
+        shiftsY.add(node);
+      }
+    });
+    if (dx > 0) diagram.moveParts(shiftsX, new go.Point(dx+10, 0), false);
+    if (dy > 0) diagram.moveParts(shiftsY, new go.Point(0, dy+10), false);
+    if (dx > 0 && dy > 0) diagram.moveParts(shiftsXY, new go.Point(dx+10, dy+10), false);
+  }
+  
+  let lastColor = 'red';
+    let colors = 0;
+    function linkStroke() {
+      lastColor = go.Brush.lightenBy(lastColor, 0.05);
+      colors++;
+      if (colors > 10) {
+        colors = 0;
+        lastColor = 'blue';
+      }
+      return lastColor; //go.Brush.randomColor();
+    }
+/*myDiagram.linkTemplate =
+  new go.Link({ routing: go.Routing.AvoidsNodes })  // link route should avoid nodes
+    .add(
+      new go.Shape(),
+      new go.Shape( { toArrow: "Standard" })
+    );
+myDiagram.linkTemplate = new go.Link({ routing: go.Routing.Orthogonal, corner: 10 })
+      .add(
+        new go.Shape({ strokeWidth: 2 }),
+        new go.Shape({ toArrow: 'OpenTriangle' })
+      );*/
+myDiagram.linkTemplate = new go.Link({ routing: go.Link.AvoidsNodes, corner: 10,curve: go.Link.JumpOver,
+    relinkableFrom: true,
+    relinkableTo: true, })
+      //.bind('fromSpot')
+      //.bind('toSpot')
+	  .bind("fromEndSegmentLength")
+    .bind("toEndSegmentLength")
+      .add(
+        // use a binding to create a different color for each node
+        new go.Shape({ strokeWidth: 1 }).bind('stroke', '', linkStroke),
+        new go.Shape({ toArrow: 'Standard', scale: 0.4 ,}),
+		
+		
+		
+      );
+
+ 
+
+  myDiagram.model = new go.GraphLinksModel(
+    [
+	  { key:"Cloud-Providers", isGroup: true, text: 'GKE or AKS or EKS' },
+      { key: "MasterNode", color: "lightblue", isGroup: true,text: 'MasterNode', group: 'Cloud-Providers' },
+	  { key: "WorkerNode", color: "lightblue", isGroup: true,text: 'WorkerNode', group: 'Cloud-Providers' },
+	  { key: "Namespace", color: "lightblue", isGroup: true,text: 'Namespace', group:"WorkerNode" },
+	  { key:"Deployment",group: "Namespace", isGroup: true,text: 'Deployment' },
+      { key: "Pod", color: 'orange', isGroup: true,text: 'Pod',group:"Deployment" },
+	  { key: "kube-system", color: "pink", isGroup: true, text: 'kube-system', group :'MasterNode' },
+	  { key: "Security", color: "pink", isGroup: true, text: 'Security' , group: 'Namespace'},
+	  { key: "Storage", color: "pink", isGroup: true, text: 'Storage' , group: 'Namespace'},
+	  { key: "Network", color: "pink", isGroup: true, text: 'Network' , group: 'WorkerNode'},
+	  	
+	  { key:"Container1",group: "Pod",color:'red' },
+	  { key:"Container2",group: "Pod",color:'red' },
+	  { key:"ClusterRole",group: "Security",isSubGraphExpanded: false,},
+	  { key:"ConfigMap",group: "Security" },
+	  
+	  { key:"CustomResourceDefinition",group: "MasterNode" },
+	  
+	  { key:"Ingress",group: "Network" ,color:'red'},
+	  { key:"Job",group: "MasterNode" },
+	  
+	  { key:"PersistentVolume",group: "Storage" },
+	  { key:"Pod",group: "MasterNode" },
+	  { key:"PriorityClass",group: "MasterNode" },
+	  { key:"Role",group: "Security" },
+	  { key:"Secret",group: "Security" },
+	  { key:"ServiceAccount",group: "Security" },
+	  { key:"StroageClass",group: "Storage" },
+	  
+	  
+	  { key:"CronJob",group: "MasterNode" },
+	  { key:"DaemonSet1",group: "WorkerNode" , color: "pink"},
+	  { key:"DaemonSet2",group: "MasterNode", color: "pink" },
+	  { key:"Endpoints",group: "Network" },
+	  { key:"Istio",group: "Network" },
+	  { key:"NetworkPolicy",group: "Network" },
+	  { key:"PersistentVolumeClaim",group: "Storage" },
+	  { key:"PodDisruptionBudget",group: "MasterNode" },
+	  { key:"Service",group: "Network" },
+	  { key:"StatefulSet",group: "MasterNode" },
+	  { key:"plugins",group: "MasterNode" },
+	  { key:"ReplicasetController",group: "kube-system" },
+	  
+    ],
+    [
+	{ from: "PersistentVolume", to: "StroageClass", category: "Test" , text:"link"},
+	{ from: "PersistentVolumeClaim", to: "PersistentVolume", category: "Test" , text:"link"},
+	{ from: "Pod", to: "PersistentVolumeClaim", category: "Test" , text:"link"},
+	{ from: "ServiceAccount", to: "ClusterRole", category: "Test" , text:"link"},
+	{ from: "ServiceAccount", to: "Role", category: "Test" , text:"link"},
+	
+	
+ 
+    ]);
+	 
+
+    
+	
+	
+  }
+    //window.addEventListener('DOMContentLoaded', init);
+  </script>
+</head>
+<body onload="init()">
+
+  <div id="myDiagramDiv" style="border: solid 1px black; width:100%; height:600px;vertical-align: top;display: inline-block;"></div>
+   
+	  </div>
+</body>
+</html>
