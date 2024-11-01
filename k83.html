@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -209,7 +206,8 @@ myDiagram.linkTemplate = new go.Link({ routing: go.Link.AvoidsNodes, corner: 10,
         // use a binding to create a different color for each node
         new go.Shape({ strokeWidth: 1 }).bind('stroke', '', linkStroke),
         new go.Shape({ toArrow: 'Standard', scale: 0.4 ,}),
-		
+		  new go.TextBlock()                        // this is a Link label
+        .bind("text")
 		
 		
       );
@@ -263,7 +261,7 @@ myDiagram.linkTemplate = new go.Link({ routing: go.Link.AvoidsNodes, corner: 10,
 	  
     ],
     [
-	{ from: "PersistentVolume", to: "StroageClass", category: "Test" , text:"link"},
+	{ from: "PersistentVolume", to: "StroageClass",  text:"link"},
 	{ from: "PersistentVolumeClaim", to: "PersistentVolume", category: "Test" , text:"link"},
 	{ from: "Pod", to: "PersistentVolumeClaim", category: "Test" , text:"link"},
 	{ from: "ServiceAccount", to: "ClusterRole", category: "Test" , text:"link"},
