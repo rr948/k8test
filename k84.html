@@ -160,7 +160,12 @@
                     isSubGraphExpanded: false,
                     loc: "0 0"
                 },
-                {
+                {key:6,
+                 isGroup:true,
+                 text: "Group",
+                 isSubGraphExpanded: false,
+                    loc: "0 0"
+                },         {
                     key: 1,
                     text: "Alpha",
                     group: 0,
@@ -178,10 +183,17 @@
                     group: 0,
                     loc: "60 130"
                 },
-                {
+{
                     key: 4,
+                    text: "Gamma",
+                    group: 0,
+                    loc: "60 130"
+                },
+                {
+                    key: 5,
                     text: "Delta",
-                    loc: "200 70"
+                    loc: "200 70",
+                    group:6
                 } // in the way when the group is expanded
             ],
             linkDataArray: [{
@@ -193,7 +205,7 @@
                 {
                     from: 1,
                     fpid: "B",
-                    to: 4,
+                    to: 5,
                     tpid: "T"
                 }
             ]
