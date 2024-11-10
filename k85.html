@@ -7,8 +7,10 @@
   <script id="code">
 const $ = go.GraphObject.make;
 const myDiagram =
-  $(go.Diagram, "myDiagramDiv", {
-      InitialLayoutCompleted: (e) => {
+  $(go.Diagram, 
+   "myDiagramDiv",
+    allowZoom:false,
+    { InitialLayoutCompleted: (e) => {
         e.diagram.scale = 0.8;
         e.diagram.contentAlignment = go.Spot.Center;
       },
@@ -38,6 +40,7 @@ const myDiagram =
       //   myChangingSelection = false;
       // },
     });
+
 // myDiagram.addModelChangedListener((e) => {
 //   if (e.model.skipsUndoManager) return;
 //   if (myChangingModel) return;
