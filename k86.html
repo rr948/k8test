@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Minimal GoJS Sample</title>
+  <!-- Copyright 1998-2024 by Northwoods Software Corporation. -->
+</head>
+<body>
+  <div id="myDiagramDiv" style="border: solid 1px black; width:100%; height:400px"></div>
+
+  <script src="https://unpkg.com/gojs"></script>
+  <script id="code">
+const myDiagram =
+  new go.Diagram("myDiagramDiv", { initialScale: 2 });
+
+// the Panel.itemTemplateMap
+const ITM = new go.Map();
+ITM.set("",  // default case: just a string
+  new go.Panel()
+    .add(
+      new go.TextBlock().bind("text", "")
+    ));
+ITM.set("LINK",  // a hyperlink
+  new go.Panel()
+    .add(
+      new go.Shape("Diamond", {
+          width: 12, height: 12,
+          fill: "cyan", stroke: "gold",
+          cursor: "pointer",
+          click: (e, pnl) => window.open(pnl.part.data.hyperlink, "_blank")
+        })
+    ));
+
+myDiagram.nodeTemplate =
+  new go.Node("Auto")
+    .add(
+      new go.Shape("RoundedRectangle", { fill: null, spot1: go.Spot.TopLeft, spot2: go.Spot.BottomRight }),
+      new go.Panel("Horizontal", { margin: new go.Margin(4, 4, 2, 4), itemTemplateMap: ITM })
+        .bind("itemArray", "text", t => {
+          const s = t.split("called");
+          const a = [];
+          for (let i = 0; i < s.length; i++) {
+            if (i > 0) a.push({ category: "LINK" });
+            a.push(s[i]);
+          }
+          return a;
+        })
+    );
+
+myDiagram.model = new go.GraphLinksModel([
+  { text: "a fish called Wanda", hyperlink: "https://example.com/Wanda" },
+  { text: "no link embedded here" }
+]);
+  </script>
+</body>
+</html>
