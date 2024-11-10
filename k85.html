@@ -9,7 +9,7 @@ const $ = go.GraphObject.make;
 const myDiagram =
   $(go.Diagram, 
    "myDiagramDiv",
-    allowZoom:false,
+    
     { InitialLayoutCompleted: (e) => {
         e.diagram.scale = 0.8;
         e.diagram.contentAlignment = go.Spot.Center;
@@ -21,7 +21,7 @@ const myDiagram =
         cellSize: new go.Size(1, 1),
       }),
       allowCopy: false,
-      allowZoom: true,
+      allowZoom: false,
       "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
       "commandHandler.archetypeGroupData": {
         isGroup: true,
