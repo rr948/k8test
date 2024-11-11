@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html><body>
-<script src="https://unpkg.com/gojs"></script>
+  <script src="https://unpkg.com/gojs"></script>
 <script id="code">
+
   function init() {
 
-    myDiagram = new go.Diagram("myDiagramDiv",
+  myDiagram = new go.Diagram("myDiagramDiv",
       {
         "InitialLayoutCompleted": e => updateTotalGroupDepth(),
         // when a drag-drop occurs in the Diagram's background, make it a top-level node
@@ -18,7 +19,22 @@
         "commandHandler.archetypeGroupData": { isGroup: true, text: "Group", horiz: false },
         "undoManager.isEnabled": true
       });
-
+	const ITM = new go.Map();
+ITM.set("",  // default case: just a string
+  new go.Panel()
+    .add(
+      new go.TextBlock().bind("text", "")
+    ));
+ITM.set("LINK",  // a hyperlink
+  new go.Panel()
+    .add(
+      new go.Shape("Diamond", {
+          width: 12, height: 12,
+          fill: "cyan", stroke: "gold",
+          cursor: "pointer",
+          click: (e, pnl) => window.open(pnl.part.data.hyperlink, "_blank")
+        })
+    ));
     const colors = {
       white: '#fffcf6',
       blue: '#dfebe5',
@@ -128,7 +144,19 @@
           shadowColor: colors.gray,
           shadowOffset: new go.Point(4.5, 3.5)
         })
-        .add(new go.Shape("RoundedRectangle", { fill: colors.yellow, stroke: null, strokeWidth: 0 }))
+        .add(new go.Shape("RoundedRectangle", { fill: colors.yellow, stroke: null, strokeWidth: 0 }),
+		new go.Panel("Horizontal", { margin: new go.Margin(4, 4, 2, 4), itemTemplateMap: ITM })
+        .bind("itemArray", "text", t => {
+          const s = t.split("called");
+          const a = [];
+          for (let i = 0; i < s.length; i++) {
+            if (i > 0) a.push({ category: "LINK" });
+            a.push(s[i]);
+          }
+          return a;
+        })
+		)
+		
         .add(new go.TextBlock(
           {
             margin: 8,
@@ -212,7 +240,7 @@
   <textarea id="mySavedModel" style="width:100%;height:300px">
 { "class": "GraphLinksModel",
   "nodeDataArray": [
-{"key":1,"isGroup":true,"text":"Main 1","horiz":true},
+{"key":1,"isGroup":true,"text":"Main 1","horiz":true,"hyperlink": "https://example.com/Wanda"},
 {"key":2,"isGroup":true,"text":"Main 2","horiz":true},
 {"key":3,"isGroup":true,"text":"Group A","group":1},
 {"key":4,"isGroup":true,"text":"Group B","group":1},
@@ -248,7 +276,7 @@
 {"key":-34,"isGroup":true,"text":"Group B","group":-25},
 {"text":"First B","group":-34,"key":-35},
 {"text":"Second B","group":-34,"key":-36},
-{"text":"Third B","group":-34,"key":-37}
+{"text":"Third B","group":-34,"key":-37,"hyperlink": "https://example.com/Wanda"}
 ],
   "linkDataArray": [
   {"from":1,"to":2}
