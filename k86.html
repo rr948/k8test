@@ -48,9 +48,15 @@ myDiagram.nodeTemplate =
     );
 
 myDiagram.model = new go.GraphLinksModel([
-  { text: "a fish called Wanda", hyperlink: "https://example.com/Wanda" },
-  { text: "no link embedded here" }
-]);
+  { key:1,text: "a fish called Wanda", hyperlink: "https://example.com/Wanda" },
+  { key:2,text: "no link embedded here" }
+],
+  [{
+                    from: "1",
+                    to: "2",
+                }
+  ]
+);
   </script>
 </body>
 </html>
