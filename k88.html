@@ -1,8 +1,10 @@
 
+
 <!DOCTYPE html>
 <html>
 <body>
   <div id="myDiagramDiv" style="border: solid 1px black; width:90%; height:700px"></div>
+   <input id="levelSlider" type="range" min="0" max="5" />
 
   <script src="https://unpkg.com/gojs@2.3.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.14/dist/extensions/HyperlinkText.js"></script>
@@ -556,7 +558,22 @@ myDiagram.model = new go.GraphLinksModel([
       to: "18",
     },
   ]);
+  var slider = document.getElementById("levelSlider");
+    slider.addEventListener('change', reexpand);
+    slider.addEventListener('input', reexpand);
 
+function reexpand(e) {
+    myDiagram.commit(diag => {
+      var level = parseInt(document.getElementById("levelSlider").value);
+      diag.findTopLevelGroups().each(g => expandGroups(g, 0, level))
+    }, "reexpand");
+  }
+  
+  function expandGroups(g, i, level) {
+    if (!(g instanceof go.Group)) return;
+    g.isSubGraphExpanded = i < level;
+    g.memberParts.each(m => expandGroups(m, i + 1, level))
+  }
 //myDiagram.model.nodeDataArray.forEach((node) => {
 //  if (node.isGroup) {
 //    createGroupTemplate("OfGroups");
