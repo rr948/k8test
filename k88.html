@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="myDiagramDiv" style="border: solid 1px black; width:90%; height:700px"></div>
+
+  <script src="https://unpkg.com/gojs@2.3.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.14/dist/extensions/HyperlinkText.js"></script>
+  <script id="code">
+const $ = go.GraphObject.make;
+const myDiagram =
+  $(go.Diagram, 
+   "myDiagramDiv",
+    
+    { InitialLayoutCompleted: (e) => {
+        e.diagram.scale = 0.8;
+        e.diagram.contentAlignment = go.Spot.Center;
+      },
+      mouseDrop: (e) => finishDrop(e, null),
+      layout: $(go.GridLayout, {
+        wrappingColumn: 3,
+        alignment: go.GridLayout.Position,
+        cellSize: new go.Size(1, 1),
+      }),
+      allowCopy: false,
+      allowZoom: false,
+      "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+      "commandHandler.archetypeGroupData": {
+        isGroup: true,
+        category: "OfNodes",
+      },
+      "undoManager.isEnabled": true,
+      // ChangedSelection: (e) => {
+      //   if (myChangingSelection) return;
+      //   myChangingSelection = true;
+      //   var diagnodes = new go.Set();
+      //   myDiagram.selection.each((n) =>
+      //     diagnodes.add(n)
+      //   );
+      //   myDiagram.clearSelection();
+      //   myDiagram.selectCollection(diagnodes);
+      //   myChangingSelection = false;
+      // },
+    });
+
+// myDiagram.addModelChangedListener((e) => {
+//   if (e.model.skipsUndoManager) return;
+//   if (myChangingModel) return;
+//   myChangingModel = true;
+//   if (
+//     e.modelChange === "nodeGroupKey" ||
+//     e.modelChange === "nodeParentKey"
+//   ) {
+//     var treenode = myDiagram.findNodeForData(
+//       e.object
+//     );
+//     if (treenode !== null) treenode.updateRelationshipsFromData();
+//   } else if (e.change === go.ChangedEvent.Property) {
+//     var treenode = myDiagram.findNodeForData(
+//       e.object
+//     );
+//     if (treenode !== null) treenode.updateTargetBindings();
+//   } else if (
+//     e.change === go.ChangedEvent.Insert &&
+//     e.propertyName === "nodeDataArray"
+//   ) {
+//     myDiagram.model.nodeDataArray.splice(
+//       e.newParam,
+//       1
+//     );
+//     myDiagram.model.addNodeData(e.newValue);
+//   } else if (
+//     e.change === go.ChangedEvent.Remove &&
+//     e.propertyName === "nodeDataArray"
+//   ) {
+//     var treenode = myDiagram.findNodeForData(
+//       e.oldValue
+//     );
+//     if (treenode !== null)
+//       myDiagram.remove(treenode);
+//   }
+//   myChangingModel = false;
+// });
+
+//var myChangingSelection = false;
+
+function highlightGroup(e, grp, show) {
+  if (!grp) return;
+  e.handled = true;
+  if (show) {
+    var tool = grp.diagram.toolManager.draggingTool;
+    var map = tool.draggedParts || tool.copiedParts;
+    if (grp.canAddMembers(map.toKeySet())) {
+      grp.isHighlighted = true;
+      return;
+    }
+  }
+  grp.isHighlighted = false;
+}
+
+function finishDrop(e, grp) {
+  var ok =
+    grp !== null
+      ? grp.addMembers(grp.diagram.selection, true)
+      : e.diagram.commandHandler.addTopLevelParts(
+          e.diagram.selection,
+          true
+        );
+  if (!ok) e.diagram.currentTool.doCancel();
+}
+
+//const createGroupTemplate = (type) => {
+//  myDiagram.groupTemplateMap.add(
+//    type,
+myDiagram.groupTemplate =
+    $(
+      go.Group,
+      go.Panel.Auto,
+      {
+        background: "transparent",
+        mouseDragEnter: (e, grp, prev) => highlightGroup(e, grp, true),
+        mouseDragLeave: (e, grp, next) => highlightGroup(e, grp, false),
+        computesBoundsAfterDrag: true,
+        computesBoundsIncludingLocation: true,
+        mouseDrop: finishDrop,
+        handlesDragDropForMembers: true,
+        layout: $(go.GridLayout, {
+          wrappingColumn: 3,
+          alignment: go.GridLayout.Position,
+          cellSize: new go.Size(1, 1),
+          spacing: new go.Size(4, 4),
+        }),
+      },
+      new go.Binding("background", "isHighlighted", (h) =>
+        h ? "rgba(255,0,0,0.2)" : "transparent"
+      ).ofObject(),
+      $(go.Shape, "Rectangle", {
+        fill: null,
+        stroke: "#0099CC",
+        strokeWidth: 2,
+      }),
+      $(
+        go.Panel,
+        go.Panel.Vertical,
+        $(
+          go.Panel,
+          go.Panel.Horizontal,
+
+          {
+            stretch: go.GraphObject.Horizontal,
+            margin: 1,
+            background: "#33D3E5",
+          },
+          $("SubGraphExpanderButton", {
+            alignment: go.Spot.Right,
+            margin: 5,
+          }),
+          $(
+            go.TextBlock,
+            {
+              alignment: go.Spot.Left,
+              editable: false,
+              margin: 5,
+              font: "bold 18px sans-serif",
+              stroke: "#9A6600",
+            },
+            new go.Binding("text", "text").makeTwoWay()
+          )
+        ),
+        $(go.Placeholder, { padding: 5, alignment: go.Spot.TopLeft })
+      )
+    )
+//   );
+// };
+
+myDiagram.nodeTemplate = $(
+  go.Node,
+  go.Panel.Auto,
+  {
+    mouseDrop: (e, nod) => finishDrop(e, nod.containingGroup),
+  },
+  $(go.Shape, "Rectangle", { fill: "#ACE600", strokeWidth: 2 }),
+  go.GraphObject.build('HyperlinkText',
+          { margin: 10 },
+          (node) => 'https://en.wikipedia.org/wiki/' + node.data.text,
+          (node) => '' + node.data.text
+        ),
+  
+);
+
+myDiagram.linkTemplate = $(
+    go.Link,
+    {
+      corner: 15,
+      curve: go.Link.Bezier,
+      routing: go.Link.AvoidsNodes,
+    },
+    $(go.Shape, {
+      toArrow: "OpenTriangle",
+      fill: "#666666",
+      stroke: "#666666",
+      strokeWidth: 0.5,
+    }),
+    $(go.Shape, { toArrow: "Standard", stroke: "#666666", fill: "#666666" })
+  );
+
+var myChangingModel = false;
+
+myDiagram.model = new go.GraphLinksModel([
+    {
+      key: "0",
+      text: "GKE or AKS or EKS",
+      group: "",
+      isGroup: true,
+    },
+    {
+      key: "1",
+      text: "master",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "2",
+      text: "worker",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "3",
+      text: "infolistofdatatnode",
+      group: "2",
+      isGroup: false,
+    },
+    {
+      key: "4",
+      text: "myProjectdummydata",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "5",
+      text: "test",
+      group: "4",
+      isGroup: true,
+    },
+    {
+      key: "6",
+      text: "listofProvider",
+      group: "5",
+      isGroup: false,
+    },
+    {
+      key: "7",
+      text: "testingofdata",
+      group: "4",
+      isGroup: true,
+    },
+    {
+      key: "8",
+      text: "simpleinfolist",
+      group: "7",
+      isGroup: false,
+    },
+    {
+      key: "9",
+      text: "settinglisthfhjgf",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "10",
+      text: "test5",
+      group: "9",
+      isGroup: true,
+    },
+    {
+      key: "11",
+      text: "testtestetestetste3",
+      group: "10",
+      isGroup: false,
+    },
+    {
+      key: "12",
+      text: "mapping",
+      group: "1",
+      isGroup: true,
+    },
+    {
+      key: "13",
+      text: "mappingdatataoflust",
+      group: "12",
+      isGroup: false,
+    },
+    {
+      key: "14",
+      text: "codinglist",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "15",
+      text: "Group123",
+      group: "14",
+      isGroup: true,
+    },
+    {
+      key: "16",
+      text: "group234",
+      group: "15",
+      isGroup: true,
+    },
+    {
+      key: "17",
+      text: "Group12636355353563",
+      group: "16",
+      isGroup: false,
+    },
+    {
+      key: "18",
+      text: "Group333333333",
+      group: "16",
+      isGroup: false,
+    },
+    {
+      key: "19",
+      text: "groupkey",
+      group: "14",
+      isGroup: true,
+    },
+    {
+      key: "20",
+      text: "group2",
+      group: "19",
+      isGroup: true,
+    },
+    {
+      key: "21",
+      text: "group352353375365363755",
+      group: "20",
+      isGroup: false,
+    },
+    {
+      key: "22",
+      text: "group63667456345634554",
+      group: "15",
+      isGroup: true,
+    },
+    {
+      key: "23",
+      text: "http://www.google.com",
+      group: "22",
+      isGroup: true,
+    },
+    {
+      key: "24",
+      text: "group63673847346734747",
+      group: "23",
+      isGroup: false,
+    },
+    {
+      key: "25",
+      text: "group98848893746764",
+      group: "22",
+      isGroup: false,
+    },
+    {
+      key: "26",
+      text: "group3672543422",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "27",
+      text: "group782365334354",
+      group: "26",
+      isGroup: false,
+    },
+    {
+      key: "28",
+      text: "group65233234",
+      group: "19",
+      isGroup: true,
+    },
+    {
+      key: "29",
+      text: "group276534534543",
+      group: "28",
+      isGroup: false,
+    },
+    {
+      key: "30",
+      text: "group3266533",
+      group: "2",
+      isGroup: false,
+    },
+    {
+      key: "31",
+      text: "group3t2663535",
+      group: "4",
+      isGroup: true,
+    },
+    {
+      key: "32",
+      text: "group87265363535",
+      group: "31",
+      isGroup: false,
+    },
+    {
+      key: "33",
+      text: "group26638728372",
+      group: "0",
+      isGroup: true,
+    },
+    {
+      key: "34",
+      text: "group0001",
+      group: "33",
+      isGroup: true,
+    },
+    {
+      key: "35",
+      text: "group9987766",
+      group: "34",
+      isGroup: false,
+    },
+    {
+      key: "36",
+      text: "list33",
+      group: "9",
+      isGroup: true,
+    },
+    {
+      key: "37",
+      text: "http://www.google.com",
+      group: "36",
+      isGroup: false,
+    },
+    {
+      key: "38",
+      text: "group24242424242",
+      group: "33",
+      isGroup: true,
+    },
+    {
+      key: "39",
+      text: "group8278736353",
+      group: "38",
+      isGroup: false,
+    },
+    {
+      key: "40",
+      text: "group7653343453",
+      group: "19",
+      isGroup: true,
+    },
+    {
+      key: "41",
+      text: "group7835635733",
+      group: "40",
+      isGroup: false,
+    },
+    {
+      key: "42",
+      text: "group938237836763",
+      group: "22",
+      isGroup: false,
+    },
+    {
+      key: "43",
+      text: "info223",
+      group: "1",
+      isGroup: true,
+    },
+    {
+      key: "44",
+      text: "grpup833838",
+      group: "43",
+      isGroup: false,
+    },
+  ],
+  [
+    {
+      from: "25",
+      to: "24",
+    },
+    {
+      from: "24",
+      to: "44",
+    },
+    {
+      from: "24",
+      to: "32",
+    },
+    {
+      from: "24",
+      to: "42",
+    },
+    {
+      from: "24",
+      to: "30",
+    },
+    {
+      from: "24",
+      to: "8",
+    },
+    {
+      from: "24",
+      to: "6",
+    },
+    {
+      from: "24",
+      to: "29",
+    },
+    {
+      from: "24",
+      to: "39",
+    },
+    {
+      from: "24",
+      to: "17",
+    },
+    {
+      from: "24",
+      to: "27",
+    },
+    {
+      from: "24",
+      to: "37",
+    },
+    {
+      from: "24",
+      to: "13",
+    },
+    {
+      from: "24",
+      to: "35",
+    },
+    {
+      from: "24",
+      to: "11",
+    },
+    {
+      from: "24",
+      to: "21",
+    },
+    {
+      from: "24",
+      to: "41",
+    },
+    {
+      from: "24",
+      to: "3",
+    },
+    {
+      from: "24",
+      to: "18",
+    },
+  ]);
+
+//myDiagram.model.nodeDataArray.forEach((node) => {
+//  if (node.isGroup) {
+//    createGroupTemplate("OfGroups");
+//  }
+//});
+  </script>
+</body>
+</html>
