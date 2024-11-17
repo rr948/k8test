@@ -8,6 +8,8 @@
 
   <script src="https://unpkg.com/gojs@2.3.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.14/dist/extensions/HyperlinkText.js"></script>
+  
+
   <script id="code">
 const $ = go.GraphObject.make;
 const myDiagram =
@@ -130,10 +132,10 @@ myDiagram.groupTemplate =
           wrappingColumn: 3,
           alignment: go.GridLayout.Position,
           cellSize: new go.Size(1, 1),
-          spacing: new go.Size(10, 20),
+          spacing: new go.Size(10, 30),
         }),
       },
-      new go.Binding("background", "isHighlighted", (h) =>
+      new go.Binding("avoidable", "isSubGraphExpanded", (h) =>
         h ? "rgba(255,0,0,0.2)" : "transparent"
       ).ofObject(),
       $(go.Shape, "Rectangle", {
@@ -196,8 +198,8 @@ myDiagram.linkTemplate = $(
       corner: 15,
       curve: go.Link.JumpOver,
       routing: go.Link.AvoidsNodes,
-	  relinkableFrom:true,
-	  relinkableTo: true,
+	  //relinkableFrom:true,
+	  //relinkableTo: true,
     },
 	
     $(go.Shape, {
@@ -526,6 +528,8 @@ function reexpand(e) {
     g.isSubGraphExpanded = i < level;
     g.memberParts.each(m => expandGroups(m, i + 1, level))
   }
+  
+ 
 //myDiagram.model.nodeDataArray.forEach((node) => {
 //  if (node.isGroup) {
 //    createGroupTemplate("OfGroups");
