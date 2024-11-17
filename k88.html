@@ -2,583 +2,266 @@
 
 <!DOCTYPE html>
 <html>
-<body>
-  <div id="myDiagramDiv" style="border: solid 1px black; width:90%; height:700px"></div>
-   <input id="levelSlider" type="range" min="0" max="5" />
-
-  <script src="https://unpkg.com/gojs@2.3.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.14/dist/extensions/HyperlinkText.js"></script>
+<head>
+  <title>Sample</title>
+  <!-- Copyright 1998-2021 by Northwoods Software Corporation. -->
+  <script src="go.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/create-gojs-kit@3.0.13/dist/extensions/HyperlinkText.js"></script>
   <script id="code">
-const $ = go.GraphObject.make;
-const myDiagram =
-  $(go.Diagram, 
-   "myDiagramDiv",
-    
-    { InitialLayoutCompleted: (e) => {
-        e.diagram.scale = 0.8;
-        e.diagram.contentAlignment = go.Spot.Center;
-      },
-      mouseDrop: (e) => finishDrop(e, null),
-      layout: $(go.GridLayout, {
-        wrappingColumn: 3,
-        alignment: go.GridLayout.Position,
-        cellSize: new go.Size(1, 1),
-      }),
-      allowCopy: false,
-      allowZoom: false,
-      "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
-      "commandHandler.archetypeGroupData": {
-        isGroup: true,
-        category: "OfNodes",
-      },
-      "undoManager.isEnabled": true,
-      // ChangedSelection: (e) => {
-      //   if (myChangingSelection) return;
-      //   myChangingSelection = true;
-      //   var diagnodes = new go.Set();
-      //   myDiagram.selection.each((n) =>
-      //     diagnodes.add(n)
-      //   );
-      //   myDiagram.clearSelection();
-      //   myDiagram.selectCollection(diagnodes);
-      //   myChangingSelection = false;
-      // },
-    });
+  function init() {
+    var $ = go.GraphObject.make;
 
-// myDiagram.addModelChangedListener((e) => {
-//   if (e.model.skipsUndoManager) return;
-//   if (myChangingModel) return;
-//   myChangingModel = true;
-//   if (
-//     e.modelChange === "nodeGroupKey" ||
-//     e.modelChange === "nodeParentKey"
-//   ) {
-//     var treenode = myDiagram.findNodeForData(
-//       e.object
-//     );
-//     if (treenode !== null) treenode.updateRelationshipsFromData();
-//   } else if (e.change === go.ChangedEvent.Property) {
-//     var treenode = myDiagram.findNodeForData(
-//       e.object
-//     );
-//     if (treenode !== null) treenode.updateTargetBindings();
-//   } else if (
-//     e.change === go.ChangedEvent.Insert &&
-//     e.propertyName === "nodeDataArray"
-//   ) {
-//     myDiagram.model.nodeDataArray.splice(
-//       e.newParam,
-//       1
-//     );
-//     myDiagram.model.addNodeData(e.newValue);
-//   } else if (
-//     e.change === go.ChangedEvent.Remove &&
-//     e.propertyName === "nodeDataArray"
-//   ) {
-//     var treenode = myDiagram.findNodeForData(
-//       e.oldValue
-//     );
-//     if (treenode !== null)
-//       myDiagram.remove(treenode);
-//   }
-//   myChangingModel = false;
-// });
+    myDiagram =
+      $(go.Diagram, "myDiagramDiv",
+        {
+          "undoManager.isEnabled": true
+        });
 
-//var myChangingSelection = false;
-
-function highlightGroup(e, grp, show) {
-  if (!grp) return;
-  e.handled = true;
-  if (show) {
-    var tool = grp.diagram.toolManager.draggingTool;
-    var map = tool.draggedParts || tool.copiedParts;
-    if (grp.canAddMembers(map.toKeySet())) {
-      grp.isHighlighted = true;
-      return;
-    }
-  }
-  grp.isHighlighted = false;
-}
-
-function finishDrop(e, grp) {
-  var ok =
-    grp !== null
-      ? grp.addMembers(grp.diagram.selection, true)
-      : e.diagram.commandHandler.addTopLevelParts(
-          e.diagram.selection,
-          true
-        );
-  if (!ok) e.diagram.currentTool.doCancel();
-}
-
-//const createGroupTemplate = (type) => {
-//  myDiagram.groupTemplateMap.add(
-//    type,
-myDiagram.groupTemplate =
-    $(
-      go.Group,
-      go.Panel.Auto,
-      {
-        background: "transparent",
-        mouseDragEnter: (e, grp, prev) => highlightGroup(e, grp, true),
-        mouseDragLeave: (e, grp, next) => highlightGroup(e, grp, false),
-        computesBoundsAfterDrag: true,
-        computesBoundsIncludingLocation: true,
-        mouseDrop: finishDrop,
-        handlesDragDropForMembers: true,
-        layout: $(go.GridLayout, {
-          wrappingColumn: 3,
-          alignment: go.GridLayout.Position,
-          cellSize: new go.Size(1, 1),
-          spacing: new go.Size(4, 4),
-        }),
-      },
-      new go.Binding("background", "isHighlighted", (h) =>
-        h ? "rgba(255,0,0,0.2)" : "transparent"
-      ).ofObject(),
-      $(go.Shape, "Rectangle", {
-        fill: null,
-        stroke: "#0099CC",
-        strokeWidth: 2,
-      }),
-      $(
-        go.Panel,
-        go.Panel.Vertical,
-        $(
-          go.Panel,
-          go.Panel.Horizontal,
-
-          {
-            stretch: go.GraphObject.Horizontal,
-            margin: 1,
-            background: "#33D3E5",
-          },
-          $("SubGraphExpanderButton", {
-            alignment: go.Spot.Right,
-            margin: 5,
-          }),
-          $(
-            go.TextBlock,
-            {
-              alignment: go.Spot.Left,
-              editable: false,
-              margin: 5,
-              font: "bold 18px sans-serif",
-              stroke: "#9A6600",
-            },
-            new go.Binding("text", "text").makeTwoWay()
-          )
-        ),
-        $(go.Placeholder, { padding: 5, alignment: go.Spot.TopLeft })
-      )
-    )
-//   );
-// };
-
-myDiagram.nodeTemplate = $(
-  go.Node,
-  go.Panel.Auto,
-  {
-    mouseDrop: (e, nod) => finishDrop(e, nod.containingGroup),
-  },
-  $(go.Shape, "Rectangle", { fill: "#ACE600", strokeWidth: 2 }),
-  go.GraphObject.build('HyperlinkText',
+    myDiagram.nodeTemplate =
+      $(go.Node, "Auto",
+        $(go.Shape,
+          { fill: "white", },
+          new go.Binding("fill", "color")),
+		  new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+		  go.GraphObject.build('HyperlinkText',
           { margin: 10 },
-          (node) => 'https://en.wikipedia.org/wiki/' + node.data.text,
-          (node) => '' + node.data.text
+          (node) => node.data.key,
+          (node) => node.data.key 
         ),
-  
-);
+        $(go.TextBlock,
+          { margin: 8 },
+          new go.Binding("text", "key")),
+		  new go.Panel('Auto')
+          .add(
+            //new go.Shape('RoundedTopRectangle', { fill: 'white' })
+              //.bind('fill', 'role', (r) => (r[0] === 't' ? 'lightgray' : 'white')),
+            new go.TextBlock({
+              margin: new go.Margin(0, 0, 0, 0),
+              textAlign: 'center'
+            })
+             // .bind('text', 'header')
+          ),
+		  new go.Panel('Auto', { minSize: new go.Size(NaN, 70) })
+          .add(
+            //new go.Shape('Rectangle', { fill: 'white' }),
+            new go.TextBlock({
+              width: 120,
+              margin: new go.Margin(0, 0, 0, 0),
+              textAlign: 'right'
+            })
+              .bind('text'),
+           /* new go.Shape('BpmnActivityLoop', {
+              visible: false,
+              width: 10,
+              height: 10,
+              alignment: new go.Spot(0.5, 1, 0, -3),
+              alignmentFocus: go.Spot.Bottom
+            })
+              .bind('visible', 'loop')*/
+          ),
+       /* new go.Panel('Auto')
+          .add(
+            new go.Shape('RoundedBottomRectangle', { fill: 'white' })
+              .bind('fill', 'role', (r) => (r[0] === 'b' ? 'lightgray' : 'white')),
+            new go.TextBlock({
+              margin: new go.Margin(2, 2, 0, 2),
+              textAlign: 'center'
+            })
+              .bind('text', 'footer')
+          )*/
+      );
+    
+  /*  myDiagram.groupTemplate =
+      $(go.Group, "Auto",
+        $(go.Shape, { fill: "transparent", strokeWidth: 3 },
+          new go.Binding("stroke", "color"),
+          new go.Binding("fill", "color", go.Brush.lighten)),
+		  //new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+        $(go.Placeholder, { alignment: go.Spot.TopLeft, padding: 15 }),
+        $("SubGraphExpanderButton", { alignment: go.Spot.TopLeft }),
+        {
+          minSize: new go.Size(50, 50),
+          subGraphExpandedChanged: function(grp) {
+            if (!grp.isSubGraphExpanded) return;
+            shiftNodes(grp);
+          },
+          selectionChanged: function(grp) {
+            grp.diagram.commit(function(diag) {
+              var lay = grp.isSelected ? "Foreground" : "";
+              grp.layerName = lay;
+              grp.findSubGraphParts().each(function(x) { x.layerName = lay; });
+            }, null);
+          }
+        }
+      ); */
+	   myDiagram.groupTemplate =
+    $(go.Group, "Vertical",  // title above Placeholder
+      new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+      new go.Binding("isSubGraphExpanded").makeTwoWay(),
+	  new go.Binding("avoidable", "isSubGraphExpanded", e => !e).ofObject(),
+	  
+      { background: "transparent" },
+      $(go.Panel, "Horizontal",  // button next to TextBlock
+        { stretch: go.GraphObject.Horizontal },
+        $("SubGraphExpanderButton",
+          { alignment: go.Spot.Right, margin: 5 }),
+        $(go.TextBlock,
+          {
+            alignment: go.Spot.Left,
+            editable: true,
+            margin: 5
+          },
+          new go.Binding("text").makeTwoWay())
+      ),  // end Horizontal Panel
+      $(go.Panel, "Auto",
+        { alignment: go.Spot.Left },
+        $(go.Shape, { fill: "whitesmoke" }),
+        $(go.Placeholder,          { padding: 10 })
+      )
+    );
 
-myDiagram.linkTemplate = $(
-    go.Link,
-    {
-      corner: 15,
-      curve: go.Link.Bezier,
-      routing: go.Link.AvoidsNodes,
-    },
-    $(go.Shape, {
-      toArrow: "OpenTriangle",
-      fill: "#666666",
-      stroke: "#666666",
-      strokeWidth: 0.5,
-    }),
-    $(go.Shape, { toArrow: "Standard", stroke: "#666666", fill: "#666666" })
-  );
-
-var myChangingModel = false;
-
-myDiagram.model = new go.GraphLinksModel([
-    {
-      key: "0",
-      text: "GKE or AKS or EKS",
-      group: "",
-      isGroup: true,
-    },
-    {
-      key: "1",
-      text: "master",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "2",
-      text: "worker",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "3",
-      text: "infolistofdatatnode",
-      group: "2",
-      isGroup: false,
-    },
-    {
-      key: "4",
-      text: "myProjectdummydata",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "5",
-      text: "test",
-      group: "4",
-      isGroup: true,
-    },
-    {
-      key: "6",
-      text: "listofProvider",
-      group: "5",
-      isGroup: false,
-    },
-    {
-      key: "7",
-      text: "testingofdata",
-      group: "4",
-      isGroup: true,
-    },
-    {
-      key: "8",
-      text: "simpleinfolist",
-      group: "7",
-      isGroup: false,
-    },
-    {
-      key: "9",
-      text: "settinglisthfhjgf",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "10",
-      text: "test5",
-      group: "9",
-      isGroup: true,
-    },
-    {
-      key: "11",
-      text: "testtestetestetste3",
-      group: "10",
-      isGroup: false,
-    },
-    {
-      key: "12",
-      text: "mapping",
-      group: "1",
-      isGroup: true,
-    },
-    {
-      key: "13",
-      text: "mappingdatataoflust",
-      group: "12",
-      isGroup: false,
-    },
-    {
-      key: "14",
-      text: "codinglist",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "15",
-      text: "Group123",
-      group: "14",
-      isGroup: true,
-    },
-    {
-      key: "16",
-      text: "group234",
-      group: "15",
-      isGroup: true,
-    },
-    {
-      key: "17",
-      text: "Group12636355353563",
-      group: "16",
-      isGroup: false,
-    },
-    {
-      key: "18",
-      text: "Group333333333",
-      group: "16",
-      isGroup: false,
-    },
-    {
-      key: "19",
-      text: "groupkey",
-      group: "14",
-      isGroup: true,
-    },
-    {
-      key: "20",
-      text: "group2",
-      group: "19",
-      isGroup: true,
-    },
-    {
-      key: "21",
-      text: "group352353375365363755",
-      group: "20",
-      isGroup: false,
-    },
-    {
-      key: "22",
-      text: "group63667456345634554",
-      group: "15",
-      isGroup: true,
-    },
-    {
-      key: "23",
-      text: "http://www.google.com",
-      group: "22",
-      isGroup: true,
-    },
-    {
-      key: "24",
-      text: "group63673847346734747",
-      group: "23",
-      isGroup: false,
-    },
-    {
-      key: "25",
-      text: "group98848893746764",
-      group: "22",
-      isGroup: false,
-    },
-    {
-      key: "26",
-      text: "group3672543422",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "27",
-      text: "group782365334354",
-      group: "26",
-      isGroup: false,
-    },
-    {
-      key: "28",
-      text: "group65233234",
-      group: "19",
-      isGroup: true,
-    },
-    {
-      key: "29",
-      text: "group276534534543",
-      group: "28",
-      isGroup: false,
-    },
-    {
-      key: "30",
-      text: "group3266533",
-      group: "2",
-      isGroup: false,
-    },
-    {
-      key: "31",
-      text: "group3t2663535",
-      group: "4",
-      isGroup: true,
-    },
-    {
-      key: "32",
-      text: "group87265363535",
-      group: "31",
-      isGroup: false,
-    },
-    {
-      key: "33",
-      text: "group26638728372",
-      group: "0",
-      isGroup: true,
-    },
-    {
-      key: "34",
-      text: "group0001",
-      group: "33",
-      isGroup: true,
-    },
-    {
-      key: "35",
-      text: "group9987766",
-      group: "34",
-      isGroup: false,
-    },
-    {
-      key: "36",
-      text: "list33",
-      group: "9",
-      isGroup: true,
-    },
-    {
-      key: "37",
-      text: "http://www.google.com",
-      group: "36",
-      isGroup: false,
-    },
-    {
-      key: "38",
-      text: "group24242424242",
-      group: "33",
-      isGroup: true,
-    },
-    {
-      key: "39",
-      text: "group8278736353",
-      group: "38",
-      isGroup: false,
-    },
-    {
-      key: "40",
-      text: "group7653343453",
-      group: "19",
-      isGroup: true,
-    },
-    {
-      key: "41",
-      text: "group7835635733",
-      group: "40",
-      isGroup: false,
-    },
-    {
-      key: "42",
-      text: "group938237836763",
-      group: "22",
-      isGroup: false,
-    },
-    {
-      key: "43",
-      text: "info223",
-      group: "1",
-      isGroup: true,
-    },
-    {
-      key: "44",
-      text: "grpup833838",
-      group: "43",
-      isGroup: false,
-    },
-  ],
-  [
-    {
-      from: "25",
-      to: "24",
-    },
-    {
-      from: "24",
-      to: "44",
-    },
-    {
-      from: "24",
-      to: "32",
-    },
-    {
-      from: "24",
-      to: "42",
-    },
-    {
-      from: "24",
-      to: "30",
-    },
-    {
-      from: "24",
-      to: "8",
-    },
-    {
-      from: "24",
-      to: "6",
-    },
-    {
-      from: "24",
-      to: "29",
-    },
-    {
-      from: "24",
-      to: "39",
-    },
-    {
-      from: "24",
-      to: "17",
-    },
-    {
-      from: "24",
-      to: "27",
-    },
-    {
-      from: "24",
-      to: "37",
-    },
-    {
-      from: "24",
-      to: "13",
-    },
-    {
-      from: "24",
-      to: "35",
-    },
-    {
-      from: "24",
-      to: "11",
-    },
-    {
-      from: "24",
-      to: "21",
-    },
-    {
-      from: "24",
-      to: "41",
-    },
-    {
-      from: "24",
-      to: "3",
-    },
-    {
-      from: "24",
-      to: "18",
-    },
-  ]);
-  var slider = document.getElementById("levelSlider");
-    slider.addEventListener('change', reexpand);
-    slider.addEventListener('input', reexpand);
-
-function reexpand(e) {
-    myDiagram.commit(diag => {
-      var level = parseInt(document.getElementById("levelSlider").value);
-      diag.findTopLevelGroups().each(g => expandGroups(g, 0, level))
-    }, "reexpand");
+  function shiftNodes(part) {
+    part.ensureBounds();
+    var b = part.actualBounds;
+    var diagram = part.diagram;
+    if (diagram === null) return;
+    var overlaps = diagram.findObjectsIn(b,
+          function(x) { var p = x.part; return (p.isTopLevel && p instanceof go.Node) ? p : null; },
+          function(node) { return node !== part && !node.isMemberOf(part); },
+          true);
+    var dx = 0;
+    var dy = 0;
+    var shiftsXY = new go.Set();
+    var shiftsX = new go.Set();
+    var shiftsY = new go.Set();
+    overlaps.each(function(node) {
+      var r = node.actualBounds;
+      if (r.contains(b.right, b.bottom)) {
+        dx = Math.max(dx, b.right - r.left);
+        dy = Math.max(dy, b.bottom - r.top);
+        shiftsXY.add(node);
+      } else if (b.contains(r.left, r.bottom)) {
+        dx = Math.max(dx, b.right - r.left);
+        shiftsX.add(node);
+      } else if (b.contains(r.right, r.top)) {
+        dy = Math.max(dy, b.bottom - r.top);
+        shiftsY.add(node);
+      }
+    });
+    if (dx > 0) diagram.moveParts(shiftsX, new go.Point(dx+10, 0), false);
+    if (dy > 0) diagram.moveParts(shiftsY, new go.Point(0, dy+10), false);
+    if (dx > 0 && dy > 0) diagram.moveParts(shiftsXY, new go.Point(dx+10, dy+10), false);
   }
   
-  function expandGroups(g, i, level) {
-    if (!(g instanceof go.Group)) return;
-    g.isSubGraphExpanded = i < level;
-    g.memberParts.each(m => expandGroups(m, i + 1, level))
+  let lastColor = 'red';
+    let colors = 0;
+    function linkStroke() {
+      lastColor = go.Brush.lightenBy(lastColor, 0.05);
+      colors++;
+      if (colors > 10) {
+        colors = 0;
+        lastColor = 'blue';
+      }
+      return lastColor; //go.Brush.randomColor();
+    }
+/*myDiagram.linkTemplate =
+  new go.Link({ routing: go.Routing.AvoidsNodes })  // link route should avoid nodes
+    .add(
+      new go.Shape(),
+      new go.Shape( { toArrow: "Standard" })
+    );
+myDiagram.linkTemplate = new go.Link({ routing: go.Routing.Orthogonal, corner: 10 })
+      .add(
+        new go.Shape({ strokeWidth: 2 }),
+        new go.Shape({ toArrow: 'OpenTriangle' })
+      );*/
+myDiagram.linkTemplate = new go.Link({ routing: go.Link.AvoidsNodes, corner: 10,curve: go.Link.JumpOver,
+    relinkableFrom: true,
+    relinkableTo: true, })
+      //.bind('fromSpot')
+      //.bind('toSpot')
+	  .bind("fromEndSegmentLength")
+    .bind("toEndSegmentLength")
+      .add(
+        // use a binding to create a different color for each node
+        new go.Shape({ strokeWidth: 1 }).bind('stroke', '', linkStroke),
+        new go.Shape({ toArrow: 'Standard', scale: 0.4 ,}),
+		
+		
+		
+      );
+
+ 
+
+  myDiagram.model = new go.GraphLinksModel(
+    [
+	  { key:"Cloud-Providers", isGroup: true, text: 'GKE or AKS or EKS' },
+      { key: "MasterNode", color: "lightblue", isGroup: true,text: 'MasterNode', group: 'Cloud-Providers' },
+	  { key: "WorkerNode", color: "lightblue", isGroup: true,text: 'WorkerNode', group: 'Cloud-Providers' },
+	  { key: "Namespace", color: "lightblue", isGroup: true,text: 'Namespace', group:"WorkerNode" },
+	  { key:"Deployment",group: "Namespace", isGroup: true,text: 'Deployment' },
+      { key: "Pod", color: 'orange', isGroup: true,text: 'Pod',group:"Deployment" },
+	  { key: "kube-system", color: "pink", isGroup: true, text: 'kube-system', group :'MasterNode' },
+	  { key: "Security", color: "pink", isGroup: true, text: 'Security' , group: 'Namespace'},
+	  { key: "Storage", color: "pink", isGroup: true, text: 'Storage' , group: 'Namespace'},
+	  { key: "Network", color: "pink", isGroup: true, text: 'Network' , group: 'WorkerNode'},
+	  	
+	  { key:"Container1",group: "Pod",color:'red' },
+	  { key:"Container2",group: "Pod",color:'red' },
+	  { key:"ClusterRole",group: "Security",isSubGraphExpanded: false,},
+	  { key:"ConfigMap",group: "Security" },
+	  
+	  { key:"CustomResourceDefinition",group: "MasterNode" },
+	  
+	  { key:"Ingress",group: "Network" ,color:'red'},
+	  { key:"Job",group: "MasterNode" },
+	  
+	  { key:"PersistentVolume",group: "Storage" },
+	  { key:"Pod",group: "MasterNode" },
+	  { key:"PriorityClass",group: "MasterNode" },
+	  { key:"Role",group: "Security" },
+	  { key:"Secret",group: "Security" },
+	  { key:"ServiceAccount",group: "Security" },
+	  { key:"StroageClass",group: "Storage" },
+	  
+	  
+	  { key:"CronJob",group: "MasterNode" },
+	  { key:"DaemonSet1",group: "WorkerNode" , color: "pink"},
+	  { key:"DaemonSet2",group: "MasterNode", color: "pink" },
+	  { key:"Endpoints",group: "Network" },
+	  { key:"Istio",group: "Network" },
+	  { key:"NetworkPolicy",group: "Network" },
+	  { key:"PersistentVolumeClaim",group: "Storage" },
+	  { key:"PodDisruptionBudget",group: "MasterNode" },
+	  { key:"Service",group: "Network" },
+	  { key:"StatefulSet",group: "MasterNode" },
+	  { key:"plugins",group: "MasterNode" },
+	  { key:"ReplicasetController",group: "kube-system" },
+	  
+    ],
+    [
+	{ from: "PersistentVolume", to: "StroageClass", category: "Test" , text:"link"},
+	{ from: "PersistentVolumeClaim", to: "PersistentVolume", category: "Test" , text:"link"},
+	{ from: "Pod", to: "PersistentVolumeClaim", category: "Test" , text:"link"},
+	{ from: "ServiceAccount", to: "ClusterRole", category: "Test" , text:"link"},
+	{ from: "ServiceAccount", to: "Role", category: "Test" , text:"link"},
+	
+	
+ 
+    ]);
+	 
+
+    
+	
+	
   }
-//myDiagram.model.nodeDataArray.forEach((node) => {
-//  if (node.isGroup) {
-//    createGroupTemplate("OfGroups");
-//  }
-//});
+    //window.addEventListener('DOMContentLoaded', init);
   </script>
+</head>
+<body onload="init()">
+
+  <div id="myDiagramDiv" style="border: solid 1px black; width:100%; height:600px;vertical-align: top;display: inline-block;"></div>
+   
+	  </div>
 </body>
 </html>
