@@ -61,9 +61,6 @@
         <mxCell id="MpOa22wWS3hh388NK7Gq-24" value="Resources" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="700" y="220" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="MpOa22wWS3hh388NK7Gq-25" value="RoleBindings" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="395" y="360" width="60" height="30" as="geometry" />
-        </mxCell>
         <mxCell id="MpOa22wWS3hh388NK7Gq-26" value="User A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="80" y="260" width="120" height="60" as="geometry" />
         </mxCell>
@@ -106,7 +103,7 @@
         <mxCell id="MpOa22wWS3hh388NK7Gq-38" value="Users" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="110" y="210" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="MpOa22wWS3hh388NK7Gq-39" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="MpOa22wWS3hh388NK7Gq-39" value="Role Bindings" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="360" y="430" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
