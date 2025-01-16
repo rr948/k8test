@@ -40,7 +40,9 @@ xmlhttp.onreadystatechange = function() {
     for(let i = 0; i < obj.length; i++) {
     let childObj = obj[i];
 
-    console.log("slno:"+i+"---->title:"+childObj.title + " --> answer:"+ childObj.answer);
+    //console.log("slno:"+i+"---->title:"+childObj.title + " --> answer:"+ childObj.answer);
+      console.log("Question"+i+":"+childObj.body);
+    
 }
   }
 };
