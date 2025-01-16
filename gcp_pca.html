@@ -36,7 +36,12 @@ xmlhttp.onreadystatechange = function() {
   if (xmlhttp.status == 200 && xmlhttp.readyState == 4) {
     txt = xmlhttp.responseText;
     const obj = JSON.parse(txt)
-    console.log(obj[1]);
+    //console.log(obj[1]);
+    for(let i = 0; i < obj.length; i++) {
+    let childObj = json[i];
+
+    console.log(childObj.id);
+}
   }
 };
 xmlhttp.open("GET", "gcp_pca.json", true);
