@@ -38,7 +38,7 @@ xmlhttp.onreadystatechange = function() {
     const obj = JSON.parse(txt)
     //console.log(obj[1]);
     for(let i = 0; i < obj.length; i++) {
-    let childObj = json[i];
+    let childObj = obj[i];
 
     console.log(childObj.id);
 }
