@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="myDiagramDiv" style="border: solid 1px black; width:90%; height:700px"></div>
+  <input id="levelSlider" type="range" min="0" max="5" />
+
+  <script src="go_2.3.17.js"></script>
+  <script src="HyperlinkText.js"></script>
+
+  <script id="code">
+    const $ = go.GraphObject.make;
+    const myDiagram = $(go.Diagram, "myDiagramDiv", {
+      InitialLayoutCompleted: (e) => {
+        e.diagram.scale = 0.8;
+        e.diagram.contentAlignment = go.Spot.Center;
+      },
+      layout: $(go.GridLayout, {
+        wrappingColumn: 3,
+        alignment: go.GridLayout.Position,
+        cellSize: new go.Size(1, 1),
+      }),
+      allowCopy: false,
+      allowZoom: false,
+      "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+      "commandHandler.archetypeGroupData": { isGroup: true, category: "OfNodes" },
+      "undoManager.isEnabled": true,
+    });
+
+    function highlightGroup(e, grp, show) {
+      if (!grp) return;
+      e.handled = true;
+      grp.isHighlighted = show;
+    }
+
+    function finishDrop(e, grp) {
+      var ok = grp ? grp.addMembers(grp.diagram.selection, true) : e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
+      if (!ok) e.diagram.currentTool.doCancel();
+    }
+
+    myDiagram.groupTemplate = $(
+      go.Group,
+      go.Panel.Auto,
+      {
+        background: "transparent",
+        mouseDragEnter: (e, grp) => highlightGroup(e, grp, true),
+        mouseDragLeave: (e, grp) => highlightGroup(e, grp, false),
+        layout: $(go.GridLayout, { wrappingColumn: 3, cellSize: new go.Size(1, 1), spacing: new go.Size(10, 30) }),
+      },
+      $(go.Shape, "Rectangle", { fill: null, stroke: "#0099CC", strokeWidth: 2 }),
+      $(
+        go.Panel,
+        go.Panel.Vertical,
+        $(
+          go.Panel,
+          go.Panel.Horizontal,
+          { stretch: go.GraphObject.Horizontal, margin: 1, background: "#33D3E5" },
+          $("SubGraphExpanderButton", { alignment: go.Spot.Right, margin: 5 }),
+          $(go.TextBlock, { alignment: go.Spot.Left, margin: 5, font: "bold 18px sans-serif", stroke: "#9A6600" }, new go.Binding("text", "text").makeTwoWay())
+        ),
+        $(go.Placeholder, { padding: 5, alignment: go.Spot.TopLeft })
+      )
+    );
+
+    myDiagram.nodeTemplate = $(
+      go.Node,
+      go.Panel.Auto,
+      { mouseDrop: (e, nod) => finishDrop(e, nod.containingGroup) },
+      $(go.Shape, "Rectangle", { fill: "#ACE600", strokeWidth: 2 }),
+      go.GraphObject.make("HyperlinkText", { margin: 10 }, (node) => 'https://en.wikipedia.org/wiki/' + node.data.text, (node) => '' + node.data.text)
+    );
+
+    myDiagram.linkTemplate = $(
+      go.Link,
+      { corner: 15, curve: go.Link.JumpOver, routing: go.Link.AvoidsNodes },
+      $(go.Shape, { toArrow: "Standard", fill: "#666666", stroke: "#666666", strokeWidth: 0.5 }),
+      $(go.Shape, { toArrow: "Standard", stroke: "#666666", fill: "#666666" })
+    );
+
+    myDiagram.model = new go.GraphLinksModel([
+      { key: "0", text: "GKE or AKS or EKS", isGroup: true },
+      { key: "1", text: "master", group: "0", isGroup: true },
+      { key: "2", text: "worker", group: "0", isGroup: true },
+      { key: "3", text: "kube-system", group: "0", isGroup: true },
+      { key: "4", text: "namespace", group: "2", isGroup: true },
+      { key: "5", text: "deployment", group: "4", isGroup: true },
+      { key: "6", text: "Pod", group: "5", isGroup: true },
+      { key: "7", text: "Storage", group: "4", isGroup: true },
+      { key: "8", text: "Security", group: "4", isGroup: true },
+    ],
+    [
+      { from: "6", to: "5" },
+      { from: "5", to: "4" },
+      { from: "4", to: "2" },
+      { from: "7", to: "4" },
+      { from: "8", to: "4" },
+    ]);
+
+    var slider = document.getElementById("levelSlider");
+    slider.addEventListener('change', reexpand);
+    slider.addEventListener('input', reexpand);
+
+    function reexpand(e) {
+      myDiagram.commit(diag => {
+        var level = parseInt(slider.value);
+        diag.findTopLevelGroups().each(g => expandGroups(g, 0, level));
+      }, "reexpand");
+    }
+
+    function expandGroups(g, i, level) {
+      if (!(g instanceof go.Group)) return;
+      g.isSubGraphExpanded = i < level;
+      g.memberParts.each(m => expandGroups(m, i + 1, level));
+    }
+  </script>
+</body>
+</html>
